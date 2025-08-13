@@ -1,0 +1,37 @@
+# config_js_mlp_test.yaml
+# Configuration for testing MLP with the corrected data pipeline
+
+experiment_name: JaneStreet_MLP_Test_DataLeakageFix
+experiment_type: grid_search # Using grid_search with a single param set for simplicity
+generate_degradation_config: false
+random_seed: 42
+results_dir: ./js_mlp_test_results
+
+dataset:
+  name: jane_street
+  data_path: "data/jane_street/YOUR_JANE_STREET_TRAIN_FILE_OR_PATTERN"
+  n_rows: 200000
+  train_ratio: 0.7
+  feature_cols: auto
+  target_col: "responder_6"
+  weight_col: "weight"
+  date_col: "date_id"
+  primary_metric: weighted_r2 # Or 'r2' if not using weights
+
+methods_to_run: ['MLP']
+
+parameter_grids:
+  MLP:
+    default:
+      mlp_hidden_layers: [ [24, 24, 24] ]
+      mlp_dropout: [0.15]
+      learning_rate: [0.005]
+      mlp_activation: ['ReLU']
+
+training:
+  num_epochs: 50 # Same as the grid search stage for comparison
+  batch_size: 256
+  optimizer: Adam
+
+# No degradation_study_params needed
+# No plotting_config needed by default 

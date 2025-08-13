@@ -1,0 +1,59 @@
+# CP-KAN_reproducibility/configs/experiments/jane_street/config_js_single_run_best_kan.yaml
+# Configuration for a single run using the best CP-KAN config on Jane Street
+# Adapted to use experiment_type: grid_search with a single config
+
+experiment_name: JS_SingleRun_BestKAN_GridSearchStyle
+experiment_type: grid_search # Set to grid_search
+random_seed: 42
+# num_epochs: 50 # Moved to training section
+results_dir: "results/js_singlerun_best_kan" 
+methods_to_run: ["FixedKAN"] # Only run KAN
+kan_optimize_methods: ['QUBO'] # Specify the KAN opt method
+
+dataset:
+  name: "jane_street"
+  task_type: "regression"
+  # <<< IMPORTANT: Update data_path to point to your Jane Street training data. >>>
+  # Example: "data/jane-street/train.parquet" or "data/jane-street/train_files/**/*.parquet"
+  data_path: "data/jane_street/YOUR_JANE_STREET_TRAIN_FILE_OR_PATTERN"  # <<< UPDATE THIS PATH >>>
+  n_rows: 200000 # Updated rows from Appendix C.1, Table 4
+  train_ratio: 0.7 # Updated train_ratio from Appendix C.1, Table 4
+  feature_cols: "auto" 
+  target_col: "responder_6" 
+  weight_col: "weight" 
+  date_col: "date_id"
+  primary_metric: "weighted_r2" # From Appendix I
+  optimize_sample_size: 50000 # Keep optimize sample size
+
+# Define the single configuration within parameter_grids
+parameter_grids:
+  FixedKAN:
+    default:
+      # network_shape: [79, 20, 1] -> Translate to hidden_size
+      hidden_size: [ [20] ] # Single hidden layer of size 20
+      max_degree: [5]
+      default_hidden_degree: [5]
+      learning_rate: [0.001]
+      trainable_coefficients: [True]
+      skip_qubo_hidden: [False]
+      # complexity_weight: [0.0] # Assuming this is default or not needed by runner?
+      # kan_opt_method handled by top-level key
+
+# Use training section for epochs, batch size etc.
+training:
+  num_epochs: 50 # Epochs for the single run
+  batch_size: 4096 # Large batch size from compare config / Appendix F Covertype
+  optimizer: "AdamW"
+  loss_function: "MSELoss" # Regression loss
+  device: "auto"
+  early_stopping_patience: 5 # Keep NN setting
+
+logging:
+  log_dir: "logs/js_singlerun_best_kan" # Specific log dir
+  project_name: "QKAN_JS_SingleRun"
+  use_wandb: False
+
+plotting:
+  plot_results: True
+  plot_dir: "results/js_singlerun_best_kan/plots" # Specific plot dir
+  metric_name: "Weighted R2" 
